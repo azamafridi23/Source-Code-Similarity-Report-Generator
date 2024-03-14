@@ -1,0 +1,179 @@
+body {
+  font-family: Fredoka;
+  margin: 0;
+  font-size: xx-large;
+  background-color: #f0f0f0;
+  display: flex;
+  flex-direction: row;
+}
+
+
+#code-area {  /*left menu bar*/
+  text-align: center;
+  font-size: 100%;
+  vertical-align: text-top;
+  color: #1a2c6c;
+  background-color: #ececee; 
+  border-radius: 40px; /* Rounded corners, all sides have the same radius */
+  height: 940px; /* Adjust the height as needed */
+  width: 350px; /* Set width equal to height to make it a square */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0px 50px 30px 5px;
+}
+
+#button-group{ /*buttons*/
+  background-color: #ececee; border-color: #ececee;
+}
+
+#code-area form {
+  width: 100%; /* Ensure the form takes the full width of the #code-area */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+}
+
+#code-area form div {
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#code-area input[type="file"] {
+  padding: 10px;
+}
+
+#code-area label {    /* file upload button*/
+  font-size: large;
+  color: #1a2c6c;
+  font-weight: bold;
+}
+
+#code-area button {
+  background-color: #1a2c6c;
+  font-size: 23px;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+#file-display{
+
+  border-color: #000000;
+  border: 7px solid #000000;
+  text-align: center;
+  margin-top: 150px; /* Add margin at the top to move it below *//* Adjust the pixel value to move it to the right */
+  margin-bottom: 400px;
+  margin-left: 295px;
+  width: 30%; /* Adjust the pixel value to set the desired width */
+
+}
+
+#results-area { 
+  font-weight: bold;
+  font-size: xx-large;
+  color: #1a2c6c;
+  padding: 5px;
+  text-align: center;
+  margin-top: 80px; /* Add margin at the top to move it below */
+  margin-left: 60% ;/* Adjust the pixel value to move it to the right */
+  width: 350px; /* Adjust the pixel value to set the desired width */
+  position: fixed;
+}
+
+#result-area-grid{
+  background-color: #ececee88;
+  border: 7px solid #ececeedb;
+  text-align: center;
+  margin-top: 650px; /* Add margin at the top to move it below *//* Adjust the pixel value to move it to the right */
+  margin-left: 650px;
+  width: 30%; /* Adjust the pixel value to set the desired width */
+  position:absolute;
+}
+
+#results-area-shared{ 
+  font-size: x-large;
+  color: #000000;
+  background-color: #808080ad;
+  border: 3px solid #808080ad;
+  text-align: left;
+  margin-left: 0px;
+  width: 99%; /* Adjust the pixel value to set the desired width */
+  position:sticky;
+}
+
+
+
+#results-area h2 {
+  font-weight: bold;
+  margin-bottom: 10px;
+  
+}
+
+
+
+#results-area .result-details {
+  padding: 10px; /* Adjust padding as needed */
+}
+
+
+
+#results-area .log-area {
+  border-left: 1px solid #999696; /* Add border to separate the log section */
+  padding: 10px;
+}
+
+#results-area .log-area h2 {
+  font-weight: bold;
+  margin-bottom: 5px; /* Adjust spacing as needed */
+}
+
+
+#result-item { 
+  font-size: x-large;
+  font-weight: bolder;
+  color: #18275f;
+  padding: 20px;
+  text-align: center;
+  margin-top: 10px; /* Add margin at the top to move it below */
+  margin-left: 75% ;/* Adjust the pixel value to move it to the right */
+  width: 400px; /* Adjust the pixel value to set the desired width */
+  border-radius: 0px 50px 30px 5px;
+  position: absolute
+}
+
+#file-label {
+  font-weight: bold;
+  padding: 10px;
+  background-color: #ececee; 
+  color: #1a2c6c;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.upload-icon {
+  margin-right: 10px;
+  margin-top: 10px; /* Adjust spacing between arrow icon and text */
+  margin-bottom: 10px;
+  background-color: #1a2c6c;
+  color: #ececee;
+}
+#code-area label:hover {
+  transform: scale(1.05);
+  background-color: #576dbd;
+}
+
+#code-area button:hover {
+  transform: scale(1.05);
+  background-color: #576dbd;
+}
