@@ -85,9 +85,14 @@ def compare_tokens(*tokens_lists):
 
 
 def format_shared_tokens(shared_tokens):
+    for key, val in shared_tokens.items():  # remove ',','\n','\r' and '\r\n' from the list
+        shared_tokens[key] = [
+            i for i in val if i not in [',', '\r\n', '\n', '\r']]
+    print(f'shared tokens = {shared_tokens}\n')
     formated_tokens = {}
     for key, val in shared_tokens.items():
-        formated_tokens[key] = '---'.join(shared_tokens[key])
+        formated_tokens[key] = ', '.join(shared_tokens[key])
+    print(f'formated tokens = {formated_tokens}')
 
     return formated_tokens
 
@@ -126,7 +131,7 @@ def compare_code():
 
         for file in files:
             filenames.append(file.filename)  # global variable
-        # print(f'files = {filenames}')
+        print(f'files = {filenames}')
         # Check if exactly two files are uploaded
         if len(files) < 2:
             raise ValueError("Please upload only two files.")
@@ -161,6 +166,8 @@ def compare_code():
             'shared_tokens': shared_tokens,
             'is_plagiarism': is_plagiarism_dict
         }
+        print(f"Word_similarity_dict = {word_similarity}")
+        print(f'len of word_similarity = {len(word_similarity)}')
 
     except Exception as e:
         # Handle exceptions and store the error message
