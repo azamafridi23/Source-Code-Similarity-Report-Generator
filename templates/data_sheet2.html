@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plagiarism Detector Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style1.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            cursor: pointer;
+        }
+
+        .sorted-asc::after {
+            content: " ▲";
+        }
+
+        .sorted-desc::after {
+            content: " ▼";
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="container">
+        <div class="container_right">
+            <div class="hycode">
+                <h1 class="hycode_text">
+                    Hycode</h1>
+            </div>
+
+            <!-- good form-->
+            <div>
+                <form action="/compare_code" method="post" enctype="multipart/form-data">
+                    <div class="upload_icon">
+
+                        <label class="upload_label" for="file-input" id="file-label">
+
+                            <?xml version="1.0" encoding="UTF-8"?> <!--icon-->
+                            <svg class="svg_block" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" width="200px" height="200px"
+                                viewBox="0 0 200 200" version="1.1">
+                                <g id="surface1">
+                                    <path
+                                        style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(26, 44, 108);stroke-opacity:1;stroke-miterlimit:4;"
+                                        d="M 12 9.999844 L 12 20.000156 "
+                                        transform="matrix(8.333333,0,0,8.333333,0,0)" />
+                                    <path
+                                        style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(26, 44, 108);stroke-opacity:1;stroke-miterlimit:4;"
+                                        d="M 12 9.999844 L 15.999844 14.000156 "
+                                        transform="matrix(8.333333,0,0,8.333333,0,0)" />
+                                    <path
+                                        style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(26, 44, 108);stroke-opacity:1;stroke-miterlimit:4;"
+                                        d="M 12 9.999844 L 8.000156 14.000156 "
+                                        transform="matrix(8.333333,0,0,8.333333,0,0)" />
+                                    <path
+                                        style="fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(26, 44, 108);stroke-opacity:1;stroke-miterlimit:4;"
+                                        d="M 3.999844 3.999844 L 20.000156 3.999844 "
+                                        transform="matrix(8.333333,0,0,8.333333,0,0)" />
+                                </g>
+                            </svg>
+                        </label>
+
+                    </div>
+
+                    <div class="upload_text">
+
+                        <label class="upload_text_label" for="file-input" id="file-label">
+                            <input type="file" name="files[]" id="file-input" accept=".java, .cpp, .py" multiple
+                                style="display: none;" required />
+
+                            <span onclick="document.getElementById('file-input').click()"> </span> Click
+                            to
+                            Upload Files
+                        </label>
+
+                    </div>
+                    <div style="display: flex; justify-content: center; align-items: center;">
+
+                        <button class="blue_Button" type="submit">Check Similarity</button>
+                    </div>
+
+                </form>
+
+            </div>
+
+
+        </div>
+
+        <div class="middle_container">
+            <div class="report_containers">
+
+                <div class="similarity_text_box">
+                    <h1 class="similarity_text">
+                        Similarity Report</h1>
+                </div>
+                <table id="sortable-table">
+                    <thead>
+                        <tr>
+                            <th data-sort="file-name">File Name</th>
+                            <th data-sort="similar-tokens">Similar Tokens</th>
+                            <th data-sort="similarity-score">Similarity Score</th>
+                            <th data-sort="match-against">Match Against</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for index, item in final_list %}
+                        <tr>
+                            <td>{{ item[0] }}</td>
+                            <td>{{ item[1] }}</td>
+                            <td class="similarity-score">{{ item[2] }}</td>
+                            <td>{{ item[3] }}</td>
+                            <td><a href="{{ url_for('student_page', row=index) }}" class="view-link">View</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const getCellValue = (tr, idx) => tr.children[idx].textContent || tr.children[idx].innerText;
+
+            const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+                v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+            )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+            document.querySelectorAll('th').forEach(th => th.addEventListener('click', () => {
+                const table = th.closest('table');
+                const tbody = table.querySelector('tbody');
+                Array.from(tbody.querySelectorAll('tr'))
+                    .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+                    .forEach(tr => tbody.appendChild(tr));
+                document.querySelectorAll('th').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
+                th.classList.toggle('sorted-asc', this.asc);
+                th.classList.toggle('sorted-desc', !this.asc);
+            }));
+        });
+    </script>
+</body>
+
+</html>

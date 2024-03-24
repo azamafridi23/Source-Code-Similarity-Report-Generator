@@ -1,5 +1,5 @@
 # Import necessary modules
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request,json
 import difflib
 import tokenize
 from io import BytesIO
@@ -9,6 +9,8 @@ app = Flask(__name__)
 
 # Function to calculate similarity between two code snippets
 filenames = []
+
+final_list = []
 
 
 def calculate_similarity(*codes):
@@ -68,14 +70,15 @@ def generate_tokens(code):
 def compare_tokens(*tokens_lists):
     shared_tokens_count = {}
     shared_tokens = {}
+    # print(f"tokens_list = {tokens_lists}")
     # Iterate through pairs of token lists
     for i in range(len(tokens_lists)):
         for j in range(i + 1, len(tokens_lists)):
             # dict_name = f'file{i}-file{j}'
-            dict_name = f'{filenames[i]} - {filenames[j]}'
+            dict_name = f"{filenames[i]} - {filenames[j]}"
             shared_tokens[dict_name] = [tok1.string for tok1, tok2 in zip(
                 tokens_lists[i], tokens_lists[j]) if tok1.string == tok2.string]
-            shared_tokens_count[dict_name] = len(shared_tokens)
+            shared_tokens_count[dict_name] = len(shared_tokens[dict_name])
 
     # print(f"len of shared_tok = {shared_tokens_count}")
     # print(f"shared_tok = {shared_tokens}")
@@ -85,16 +88,19 @@ def compare_tokens(*tokens_lists):
 
 
 def format_shared_tokens(shared_tokens):
+    formated_tokens_count = {}
     for key, val in shared_tokens.items():  # remove ',','\n','\r' and '\r\n' from the list
         shared_tokens[key] = [
             i for i in val if i not in [',', '\r\n', '\n', '\r']]
-    print(f'shared tokens = {shared_tokens}\n')
+    # print(f'shared tokens = {shared_tokens}\n')
     formated_tokens = {}
     for key, val in shared_tokens.items():
         formated_tokens[key] = ', '.join(shared_tokens[key])
-    print(f'formated tokens = {formated_tokens}')
-
-    return formated_tokens
+        formated_tokens_count[key] = len(val)
+    # print(f'formated tokens = {formated_tokens}')
+    # print(f"\n\nshared_tok by az = {shared_tokens}")
+    # print(f"format tok by az= {formated_tokens}\n\n")
+    return formated_tokens, formated_tokens_count
 
 
 # Main function for the final comparison model
@@ -107,37 +113,60 @@ def final_model_gr(*codes):
     # Generate and compare tokens for token-based similarity
     tokens_list = [generate_tokens(code) for code in codes]
     shared_tokens_count, shared_tokens = compare_tokens(*tokens_list)
-    formatted_shared_tokens = format_shared_tokens(shared_tokens)
+    formatted_shared_tokens, formated_tokens_count = format_shared_tokens(
+        shared_tokens)
 
     # print("\nToken-Based Comparison:")
 
-    return word_similarity, shared_tokens_count, formatted_shared_tokens
+    return word_similarity, formated_tokens_count, formatted_shared_tokens
 
 # Route for the home page
 
 
 @app.route('/')
 def index():
-    return render_template('index.html', result=None)
+    return render_template('data_sheet2.html', final_list=[])
+
+
+@app.route('/student/<int:row>')
+def student_page(row):
+    global final_list
+    data = final_list[row][1]
+    return render_template('index2.html', final_list=data)
+
+
+# @app.route('/abc')
+# def index2():
+#     return render_template('index2.html', final_list=final_list)
 
 # Route for handling code comparison request
 
 
 @app.route('/compare_code', methods=['POST'])
 def compare_code():
+    global final_list, filenames
+
     try:
+        # print("TRY RAN!")
+        final_list = []
+        filenames = []
         # Get uploaded files from the request
         files = request.files.getlist('files[]')
-
+        # print(f"files = {files}")
+        file_contents = {}
         for file in files:
             filenames.append(file.filename)  # global variable
-        print(f'files = {filenames}')
+            file_contents[file.filename] = file.read().decode('utf-8')
+        # print(f'files = {filenames}')
         # Check if exactly two files are uploaded
         if len(files) < 2:
             raise ValueError("Please upload only two files.")
 
-        # Read code from the files
-        codes = [file.read().decode('utf-8') for file in files]
+        codes = []
+        for key, val in file_contents.items():
+            codes.append(val)
+        # # Read code from the files
+        # codes = [file.read().decode('utf-8') for file in files]
 
         # Call the final comparison model function
         word_similarity, token_similarity, shared_tokens = final_model_gr(
@@ -158,7 +187,7 @@ def compare_code():
                 is_plagiarism_dict[key] = False
 
         for key, val in word_similarity.items():
-            word_similarity[key] = f'{val*100:.2f}%'
+            word_similarity[key] = f"{val*100:.2f}%"
 
         result = {
             'word_similarity': word_similarity,
@@ -166,16 +195,93 @@ def compare_code():
             'shared_tokens': shared_tokens,
             'is_plagiarism': is_plagiarism_dict
         }
-        print(f"Word_similarity_dict = {word_similarity}")
-        print(f'len of word_similarity = {len(word_similarity)}')
+        # print(f"Word_similarity_dict = {word_similarity}")
+        # print(f'token_similarity = {token_similarity}')
+        # print(f'shared_tokens = {shared_tokens}')
+        # print(f'is_plagiarism = {is_plagiarism_dict}')
+        myd2={}
+        for key, value in word_similarity.items():
+            temp_list = []
+            a1, a2 = key.split(" - ")
+            temp_list.append([
+                a1, token_similarity[key], value, a2, shared_tokens[key], is_plagiarism_dict[key], file_contents[a1], file_contents[a2]])
+            final_list.extend(temp_list)
+        print("final list = ",final_list)
+        modified_dict = {}
 
+        for item in final_list:
+            key = item[0]
+            if key in modified_dict:
+                modified_dict[key].append(item)
+                myd2[key].append([item[0],item[3],item[1],float(item[2][:-1])])
+            else:
+                modified_dict[key] = [item]
+                myd2[key] = [[item[0],item[3],item[1],float(item[2][:-1])]]
+        counter=0
+        for key, val_list in modified_dict.items():
+            counter2 = 0
+            for i in val_list:
+                i.append(counter2)
+                counter2 += 1
+            modified_dict[key] = (counter,val_list)
+            counter+=1
+        print('mod_d = ',modified_dict)
+        # print(modified_dict['db.py'])
+        # print("mod dict = ",modified_dict.keys())
+        for key,val_list in modified_dict.items():
+            print("-----------------------")
+            print("Key = ",key)
+            print("Row = ",val_list[0])
+            for i in val_list[1]:
+                print(f"val0={i[0]} - val3={i[3]} - val8={i[8]}")
+                
+                
+                
+
+        final_list = [(index, item) for index, item in enumerate(final_list)]
+
+        json_mod_dict = json.dumps(modified_dict)
+        
+                        
+        print(f"Myd2 = {myd2}")
+        myd2_json = json.dumps(myd2)
+        print(f"Myd2 json = {myd2_json}")
+
+        myd3 = {}
+        for key, value in myd2.items():
+            if key in myd3:
+                myd3[key].extend(value)
+            else:    
+                myd3[key] = value
+            # Iterate through the original list
+            for sublist in value:
+                # Create a new list with swapped elements
+                new_sublist = [sublist[1], sublist[0], sublist[2], sublist[3]]
+                # Append the new list to myd3 under the swapped key
+                if sublist[1] not in myd3.keys():
+                    myd3[sublist[1]] = []
+                myd3[sublist[1]].append(new_sublist)
+
+        print(f'myd3 = {myd3}')
+        myd3_json = json.dumps(myd3)
+        
+        # print(f"\n\n FINA LIST {final_list}")
+        # print(f'len of FL = {len(final_list)}')
+
+        # print(f'final list = {final_list}')
+        # print(len(final_list))
+        # print(f'codes = {codes}')
+        # print(f'file = {file_contents}')
+        # print(len(file_contents))
+        
     except Exception as e:
         # Handle exceptions and store the error message
-        # print('went in error')
+        # print('went in error and error is ', str(e))
         result = {'error': str(e)}
 
     # Render the result on the web page
-    return render_template('index.html', result=result)
+    # print(f'len of FL = {len(final_list)}')
+    return render_template('data_sheet3.html', final_list=final_list,modified_dict=modified_dict,json_mod_dict=json_mod_dict,myd2=myd3,myd2_json=myd3_json)
 
 
 # Run the Flask application if this script is executed
