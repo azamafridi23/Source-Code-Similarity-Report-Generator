@@ -128,11 +128,23 @@ def index():
     return render_template('data_sheet2.html', final_list=[])
 
 
-@app.route('/student/<int:row>')
-def student_page(row):
+@app.route('/student/<row>/<row2>')
+def student_page(row,row2):
     global final_list
-    data = final_list[row][1]
-    return render_template('index2.html', final_list=data)
+    print(f"row = {row} and row2={row2}")
+    for i in final_list:
+        a1=i[1][0]
+        a2 =i[1][3]
+        print(f"a1 = {a1} and a2 = {a2}")
+        print(f'i = {i}')
+        if ((row==a1 and row2==a2) or (row2==a1 and row==a2)):
+            print(f"a1 = {a1} and a2 = {a2}")
+            print(f"row = {row} and row2={row2}")
+            data = i[1]
+            print("data = ",data)
+            return render_template('index2.html', final_list=data)
+
+    
 
 
 # @app.route('/abc')
@@ -262,7 +274,7 @@ def compare_code():
                     myd3[sublist[1]] = []
                 myd3[sublist[1]].append(new_sublist)
 
-        print(f'myd3 = {myd3}')
+        print(f'\n\nmyd3 = {myd3}\n\n')
         myd3_json = json.dumps(myd3)
         
         # print(f"\n\n FINA LIST {final_list}")

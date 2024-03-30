@@ -30,35 +30,36 @@
             cursor: pointer;
         }
 
-        .sorted-asc::after {
+        /* .sorted-asc::after {
             content: " ▲";
         }
 
         .sorted-desc::after {
             content: " ▼";
-        }
+        } */
     </style>
     <script>
         // Function to update values based on dropdown selection
-        function updateValues(selectElement, similarTokensElement, similarityScoreElement, event,a) {
+        function updateValues(selectElement, similarTokensElement, similarityScoreElement, event, a) {
             // Get the selected index and text from the dropdown
             var selectedIndex = selectElement.selectedIndex;
             //   var selectedText = selectElement.options[selectedIndex].text;
             // var x = '{{modified_dict}}'
             var key = String(event.target.value);
-            console.log('key = ',key);
+            console.log('key = ', key);
             // console.log('a = ',a);
             a1 = JSON.parse(a);
-            console.log("a1 = ",a1);
+            console.log("a1 = ", a1);
             // console.log(typeof a1);
-            console.log("Value for 'app4.py':", a1['app4.py']);
-            console.log("b = ",a1['app4.py'][0]);
-            console.log("s index = ",selectedIndex);
-            console.log("simto = ",a1[key][2]);
+            //console.log("Value for 'app4.py':", a1['app4.py']);
+            //console.log("b = ", a1['app4.py'][0]);
+            console.log("s index = ", selectedIndex);
+            console.log("simto = ", a1[key][selectedIndex][2]);
             similarTokensElement.textContent = a1[key][selectedIndex][2];
-            similarityScoreElement.textContent = String(a1[key][selectedIndex][3]+'%');
+            similarityScoreElement.textContent = String(a1[key][selectedIndex][3] + '%');
         }
     </script>
+    <script src="https://kit.fontawesome.com/6c4bbd468f.js" crossorigin="anonymous"></script>
 
 
 </head>
@@ -74,7 +75,7 @@
 
             <!-- good form-->
             <div>
-                <form action="/compare_code" method="post" enctype="multipart/form-data">
+                <form id="myForm" action="/compare_code" method="post" enctype="multipart/form-data">
                     <div class="upload_icon">
 
                         <label class="upload_label" for="file-input" id="file-label">
@@ -140,30 +141,35 @@
                 <table>
                     <thead>
                         <tr>
-                            <th data-sort="file-name">File Name</th>
-                            <th data-sort="similar-tokens">Similar Tokens</th>
-                            <th data-sort="similarity-score">Similarity Score</th>
-                            <th data-sort="match-against">Match Against</th>
+                            <th data-sort="file-name"><i class="fas fa-sort"> File Name</i></th>
+                            <th data-sort="similar-tokens"><i class="fas fa-sort"> Similar Tokens</i></th>
+                            <th data-sort="similarity-score"><i class="fas fa-sort"> Similarity Score</i></th>
+                            <th data-sort="match-against"><i class="fas fa-sort"> Match Against</i></th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for key, val_list in myd2.items() %}
                         <tr>
-                          <td>{{ key }}</td>
-                          {% set val_list_var = val_list %}
-                          <td class="similar-tokens">{{ val_list[0][2] }}</td>
-                          <td class="similarity-score">{{ val_list[0][3] }}%</td>
-                          <td>
-                            <select onchange="updateValues(this, this.parentElement.previousElementSibling.previousElementSibling,this.parentElement.previousElementSibling, event,'{{myd2_json}}')">
-                              {% for i in val_list %}
-                              <option value="{{ key }}">{{ i[1] }}</option>
-                              {% endfor %}
-                            </select>
-                          </td>
+                            <td>{{ key }}</td>
+                            {% set val_list_var = val_list %}
+                            <td class="similar-tokens">{{ val_list[0][2] }}</td>
+                            <td class="similarity-score">{{ val_list[0][3] }}%</td>
+                            <td>
+                                <select
+                                    onchange="updateValues(this, this.parentElement.previousElementSibling.previousElementSibling,this.parentElement.previousElementSibling, event,'{{myd2_json}}')"
+                                    style="background-color: lightskyblue; color: #333; border: 1px solid #ccc; border-radius: 5px; padding: 5px;">
+                                    {% for i in val_list %}
+                                    <option value="{{ key }}" style="background-color: #f0f8ff; color: #333;">{{ i[1] }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+
+                            <td><a href="#" class="view-link" onclick="viewStudent(this,'{{key}}')">View</a></td>
                         </tr>
                         {% endfor %}
-                      </tbody>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -186,6 +192,35 @@
                 th.classList.toggle('sorted-asc', this.asc);
                 th.classList.toggle('sorted-desc', !this.asc);
             }));
+        });
+
+
+        function viewStudent(link, key) {
+            key = key.trim();
+            // console.log("link = ", link,"!");
+            // console.log("key = ", key,"!")
+
+            var selectElement = link.parentElement.previousElementSibling.querySelector('select');
+            var selectedOption = selectElement.options[selectElement.selectedIndex].innerText;
+            var encodedOption = encodeURIComponent(selectedOption);
+            selectedOption=selectedOption.trim();
+            // console.log("s option = ",selectedOption,"!");
+            // console.log("enc option = ",encodedOption,"!");
+            // console.log("enc key = ",encodeURIComponent(key),"!");
+
+            var url = "{{ url_for('student_page', row='PLACEHOLDER_1', row2='PLACEHOLDER_2') }}".replace('PLACEHOLDER_1', selectedOption).replace('PLACEHOLDER_2', encodeURIComponent(key));
+            // console.log("url = ", url)
+
+            // Navigate to the constructed URL
+            window.location.href = url;
+        }
+
+        document.getElementById('myForm').addEventListener('submit', function (event) {
+            var files = document.getElementById('file-input').files;
+            if (files.length < 2) {
+                event.preventDefault(); // Prevent form submission
+                alert("Please upload at least 2 files."); // Show alert message
+            }
         });
     </script>
 </body>
